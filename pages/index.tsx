@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
-import Login from '../components/Login';
-import { getUsername } from '../lib/auth';
-import { useRouter } from 'next/router';
+import Login from '../components/Login'; // 名前入力フォームをインポート
+import { getUsername } from '../lib/auth'; // localStorage から名前を取得する関数
+import { useRouter } from 'next/router';   // ページ遷移用のフック
 
 export default function Home() {
   const router = useRouter();
 
+  // ページ読み込み時に実行
   useEffect(() => {
-    const u = getUsername();
-    if (u) router.replace('/dream');
+    const u = getUsername(); // 保存されたユーザー名を取得
+    if (u) router.replace('/dream'); // すでにログイン済みなら /dream にリダイレクト
   }, []);
 
   return (
     <div className="container">
       <main className="card">
         <h1>夢日記へようこそ</h1>
+        {/* 名前を入力してログインするフォーム */}
         <Login />
       </main>
     </div>
