@@ -1,3 +1,4 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css'; // アプリ全体で共通して使うCSSを読み込む
 import type { AppProps } from 'next/app'; // Next.js が提供する型定義（ページコンポーネント用）
 
