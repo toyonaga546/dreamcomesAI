@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 
 // supabase
-import { getSupabase, supabase } from '../utils/supabase';
+import { getSupabase } from '../utils/supabase';
 
 
 export default function Register() {
@@ -34,7 +34,13 @@ export default function Register() {
       // supabaseのサインアップ。metadataとしてニックネームを渡す
       const result = await client.auth.signUp(
         { email, password },
-        { data: { nickname } }
+        {
+          data: { nickname },
+          // 明示的な確認メールのリンク先（送られるメールでこの URL が使われます）
+          // 一部のバージョンでオプション名が異なるため両方渡しておきます
+          emailRedirectTo: 'https://dreamcomes-ai.vercel.app/login',
+          redirectTo: 'https://dreamcomes-ai.vercel.app/login',
+        }
       )
 
       // 詳細ログ（data / error オブジェクトを全部出す）
