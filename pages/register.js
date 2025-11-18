@@ -32,16 +32,14 @@ export default function Register() {
       }
 
       // supabaseのサインアップ。metadataとしてニックネームを渡す
-      const result = await client.auth.signUp(
-        { email, password },
-        {
+      const result = await client.auth.signUp({
+        email,
+        password,
+        options: {
           data: { nickname },
-          // 明示的な確認メールのリンク先（送られるメールでこの URL が使われます）
-          // 一部のバージョンでオプション名が異なるため両方渡しておきます
-          emailRedirectTo: 'https://dreamcomes-ai.vercel.app/login',
-          redirectTo: 'https://dreamcomes-ai.vercel.app/login',
+          emailRedirectTo: 'https://dreamcomes-ai.vercel.app/login'
         }
-      )
+      })
 
       // 詳細ログ（data / error オブジェクトを全部出す）
       console.log('signUp result:', result)
