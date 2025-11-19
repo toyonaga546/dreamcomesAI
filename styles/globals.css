@@ -38,3 +38,78 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
 .saved{margin-top:18px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid #eef2ff}
 
 @media (max-width:600px){.card{padding:16px}}
+
+/*ログイン画面*/
+.loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at top, #4f46e5 0%, #0b1020 45%, #050816 100%);
+  color: #f9fafb;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.55);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.loginTitle {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 300;
+  margin-bottom: 24px;
+  letter-spacing: 0.08em;
+}
+
+/*新規登録画面*/
+.field {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.buttonRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.primaryButton {
+  background: #6366f1;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
