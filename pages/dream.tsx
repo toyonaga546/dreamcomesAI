@@ -31,7 +31,7 @@ export default function DreamPage() {
         minHeight: "100vh",
         backgroundImage: 'url("/images/nightsky.png")',
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition: "right center",
         backgroundRepeat: "no-repeat",
       }}
     >
