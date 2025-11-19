@@ -85,7 +85,7 @@ export default function DreamForm({ initialValue = "", username, onSaved }: Prop
   return (
     <form onSubmit={handleSubmit} className="form">
       <label>
-        今日の夢を書いてください
+        なるべく詳細に書いてください
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -96,7 +96,7 @@ export default function DreamForm({ initialValue = "", username, onSaved }: Prop
 
       <div className="row">
         <button type="submit" className="btn" disabled={sending}>
-          {sending ? "送信中..." : "確定してn8nへ送信"}
+          {sending ? "送信中..." : "動画生成を開始！"}
         </button>
       </div>
 
