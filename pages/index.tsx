@@ -13,9 +13,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="container">
-      <main className="card">
-        <h1>夢日記へようこそ</h1>
+    <div className="loginPage">
+      <main className="loginCard">
+        <h1 className='loginTitle'>夢日記へようこそ</h1>
         {/* 名前を入力してログインするフォーム */}
         <Login />
       </main>
