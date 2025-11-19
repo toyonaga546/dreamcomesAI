@@ -25,31 +25,54 @@ export default function DreamPage() {
   }
 
   return (
-    <div className="container">
-      <main className="card">
-        <h1>{username ?? ""}さんの夢日記</h1>
-
-        {username && (
-          <DreamForm
-            initialValue={saved}
-            username={username}
-            onSaved={(v) => setSaved(v)}
-          />
-        )}
-
-        {saved && (
-          <section className="saved">
-            <h2>最後に確定した夢</h2>
-            <p>{saved}</p>
-          </section>
-        )}
-
-        <div style={{ marginTop: 12 }}>
-          <button className="btn ghost" onClick={handleLogout}>
+    <div
+      className="dreamPage"
+      style={{
+        minHeight: "100vh",
+        backgroundImage: 'url("/images/nightsky.png")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="dreamOverlay">
+        <header className="dreamHeader">
+          <div className="dreamLogo">アプリ名</div>
+          <button className="secondaryButton" onClick={handleLogout}>
             ログアウト
           </button>
-        </div>
-      </main>
+        </header>
+
+        <main className="dreamMain">
+          <section className="dreamHero">
+            <h1 className="dreamTitle">
+              {username ?? ""}さんの夢を，みんなに届けよう
+            </h1>
+            <p className="dreamSubtitle">
+              あなたが見た夢をAIが物語や映像に変換します．
+            </p>
+          </section>
+
+          <section className="dreamCard">
+            <h2 className="dreamCardTitle">見た夢を教えてください</h2>
+
+            {username && (
+              <DreamForm
+                initialValue={saved}
+                username={username}
+                onSaved={(v) => setSaved(v)}
+              />
+            )}
+
+            {saved && (
+              <section className="saved">
+                <h3 className="savedTitle">最後に見た夢</h3>
+                <p className="savedBody">{saved}</p>
+              </section>
+            )}
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
