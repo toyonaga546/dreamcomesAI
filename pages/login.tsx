@@ -1,7 +1,6 @@
 "use client"; // Next.js（App Router使用時に必要）
 
 import React, { useState } from "react";
-import styles from "../styles/Home.module.css";
 import { useRouter } from "next/router";
 import { getSupabase } from "../utils/supabase";
 import { setUsername } from "../lib/auth";
@@ -50,9 +49,9 @@ export default function Login() {
   };
 
   return (
-    <div className={styles.loginPage}>
-      <div className={styles.loginCard}>
-        <h1 className={styles.loginTitle}>DreamComesAI</h1>
+    <div className="loginPage">
+      <div className="loginCard">
+        <h1 className="loginTitle">DreamComesAI</h1>
 
         <form
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
@@ -61,14 +60,14 @@ export default function Login() {
           }}
         >
           {/* メールアドレス */}
-          <div className={styles.field}>
-            <label htmlFor="email" className={styles.label}>
+          <div className="field">
+            <label htmlFor="email" className="label">
               メールアドレス
             </label>
             <input
               id="email"
               type="email"
-              className={styles.input}
+              className="input"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -76,14 +75,14 @@ export default function Login() {
           </div>
 
           {/* パスワード */}
-          <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>
+          <div className="field">
+            <label htmlFor="password" className="label">
               パスワード
             </label>
             <input
               id="password"
               type="password"
-              className={styles.input}
+              className="input"
               placeholder="パスワード"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -91,15 +90,15 @@ export default function Login() {
           </div>
 
           {/* ボタン */}
-          <div className={styles.buttonRow}>
-            <button type="submit" className={styles.primaryButton}>
+          <div className="buttonRow">
+            <button type="submit" className="primaryButton">
               ログイン
             </button>
 
             <button
               type="button"
               onClick={() => router.push("/register")}
-              className={styles.secondaryButton}
+              className="secondaryButton"
             >
               新規登録
             </button>
