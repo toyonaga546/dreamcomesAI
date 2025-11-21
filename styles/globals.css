@@ -114,6 +114,10 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   cursor: pointer;
 }
 
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 /*メインページ*/
 .dreamOverlay {
   background: rgba(0, 0, 0, 0.35);
@@ -176,4 +180,40 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
 .savedBody {
   font-size: 0.95rem;
   opacity: 0.9;
+}
+
+
+/*設定*/
+.settings {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  padding: 8px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: 0.2s;
+  color: white;
+  
+  transform: translateY(6px);     /* 👈 ここでボタンごと下に“見せる” */
+}
+
+.settings:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.settings svg {
+  display: block;
+  transform: translateY(0px); /* 1〜3px くらいで好み調整 */
+}
+
+/* 🔹レスポンシブ（スマホ向け調整） */
+@media (max-width: 768px) {
+  .dreamHeader {
+    top: 12px;
+    right: 12px;
+    gap: 8px;
+  }
+  .settings {
+    padding: 6px;
+  }
 }

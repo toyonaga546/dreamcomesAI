@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DreamForm from "../components/DreamForm";
 import { getUsername, getDream, clearUsername } from "../lib/auth";
 import { useRouter } from "next/router";
+import SettingsIcon from "../components/SettingsIcon";
 
 export default function DreamPage() {
   const router = useRouter();
@@ -24,6 +25,10 @@ export default function DreamPage() {
     router.push("/");
   }
 
+  function handleSettings() {
+    router.push("/settings");
+  }
+
   return (
     <div
       className="dreamPage"
@@ -38,9 +43,14 @@ export default function DreamPage() {
       <div className="dreamOverlay">
         <header className="dreamHeader">
           <div className="dreamLogo">アプリ名</div>
-          <button className="secondaryButton" onClick={handleLogout}>
-            ログアウト
-          </button>
+          <div className="header-right">
+            <button className="secondaryButton" onClick={handleLogout}>
+              ログアウト
+            </button>
+            <button className="settings" onClick={handleSettings}>
+              <SettingsIcon size={27} />
+            </button>
+          </div>
         </header>
 
         <main className="dreamMain">
