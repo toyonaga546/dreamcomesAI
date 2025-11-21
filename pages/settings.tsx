@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getUsername, setUsername, clearUsername } from "../lib/auth";
+import { getSupabase } from "../utils/supabase"; // ★ 追加
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -10,19 +11,47 @@ export default function SettingsPage() {
   // ニックネーム（表示名）
   const [nickname, setNicknameState] = useState<string>("");
 
-  // 初期表示時に現在のユーザー名を取得
+  // 初期表示時に Supabase からユーザー情報を取得
   useEffect(() => {
-    const name = getUsername();
-    if (!name) {
-      // 未ログインならトップへ戻す
-      router.replace("/");
-      return;
-    }
-    setNicknameState(name);
+    const init = async () => {
+      const client = getSupabase();
+      if (!client) {
+        alert("Supabase が未設定です。環境変数を確認してください。");
+        router.replace("/");
+        return;
+      }
+
+      const { data, error } = await client.auth.getUser();
+
+      if (error || !data.user) {
+        // ログインしていない / セッション切れなど
+        router.replace("/");
+        return;
+      }
+
+      // Supabase に入っている nickname を優先
+      const supaNickname =
+        (data.user.user_metadata as any)?.nickname ?? "";
+
+
+      if (supaNickname) {
+        setNicknameState(supaNickname);
+        // localStorage 側も揃えておく
+        setUsername(supaNickname);
+      } else {
+        // もし metadata に入ってなければ localStorage を fallback に
+        const local = getUsername();
+        if (local) {
+          setNicknameState(local);
+        }
+      }
+    };
+
+    init();
   }, [router]);
 
-  // 設定の保存（ここではローカルの setUsername のみ）
-  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+  // 設定の保存：Supabase の metadata & localStorage 両方更新
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const trimmed = nickname.trim();
@@ -31,11 +60,28 @@ export default function SettingsPage() {
       return;
     }
 
+    const client = getSupabase();
+    if (!client) {
+      alert("Supabase が未設定です。環境変数を確認してください。");
+      return;
+    }
+
+    // Supabase 上のユーザー情報を更新
+    const { error } = await client.auth.updateUser({
+      data: { nickname: trimmed },
+    });
+
+    if (error) {
+      alert("ニックネームの更新に失敗しました: " + error.message);
+      return;
+    }
+
+    // localStorage 側も更新（アプリ内の既存処理と揃える）
     setUsername(trimmed);
+
     alert("設定を保存しました。");
     router.push("/dream");
   };
-
 
   return (
     <div className="loginPage">
@@ -57,8 +103,6 @@ export default function SettingsPage() {
               onChange={(e) => setNicknameState(e.target.value)}
             />
           </div>
-
-          {/* （例）今後増やしたい設定があればここに field を足していく */}
 
           <div className="buttonRow">
             <button type="submit" className="primaryButton">
