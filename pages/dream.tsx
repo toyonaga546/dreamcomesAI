@@ -8,6 +8,7 @@ export default function DreamPage() {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"morning" | "night">("night");
 
   // 初期読み込み時に localStorage から取得
   useEffect(() => {
@@ -18,6 +19,13 @@ export default function DreamPage() {
     }
     setUsername(u);
     setSaved(getDream());
+    // 設定画面で保存したテーマを反映
+    if (typeof window !== "undefined") {
+      const localTheme = window.localStorage.getItem("theme");
+      if (localTheme === "morning" || localTheme === "night") {
+        setTheme(localTheme);
+      }
+    }
   }, []);
 
   function handleLogout() {
@@ -34,7 +42,10 @@ export default function DreamPage() {
       className="dreamPage"
       style={{
         minHeight: "100vh",
-        backgroundImage: 'url("/images/nightsky.png")',
+        backgroundImage:
+          theme === "morning"
+            ? 'url("/images/morningsky.jpg")'
+            : 'url("/images/nightsky.png")',
         backgroundSize: "cover",
         backgroundPosition: "right center",
         backgroundRepeat: "no-repeat",
