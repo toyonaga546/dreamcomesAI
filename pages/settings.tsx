@@ -11,6 +11,15 @@ export default function SettingsPage() {
   // ニックネーム（表示名）
   const [nickname, setNicknameState] = useState<string>("");
 
+  // テーマ（朝 / 夜）
+  const [theme, setTheme] = useState<"morning" | "night">(() => {
+    if (typeof window === "undefined") return "night";
+    const localTheme = window.localStorage.getItem("theme");
+    return localTheme === "morning" || localTheme === "night"
+      ? localTheme
+      : "night";
+  });
+
   // 初期表示時に Supabase からユーザー情報を取得
   useEffect(() => {
     const init = async () => {
@@ -32,7 +41,11 @@ export default function SettingsPage() {
       // Supabase に入っている nickname を優先
       const supaNickname =
         (data.user.user_metadata as any)?.nickname ?? "";
-
+      const supaTheme =
+        (data.user.user_metadata as any)?.theme as
+          | "morning"
+          | "night"
+          | undefined;
 
       if (supaNickname) {
         setNicknameState(supaNickname);
@@ -44,6 +57,12 @@ export default function SettingsPage() {
         if (local) {
           setNicknameState(local);
         }
+      }
+
+      // テーマは useState 初期化時に localStorage から決めているので，
+      // Supabase に値があるときだけそれを優先して上書き
+      if (supaTheme === "morning" || supaTheme === "night") {
+        setTheme(supaTheme);
       }
     };
 
@@ -68,7 +87,7 @@ export default function SettingsPage() {
 
     // Supabase 上のユーザー情報を更新
     const { error } = await client.auth.updateUser({
-      data: { nickname: trimmed },
+      data: { nickname: trimmed, theme },
     });
 
     if (error) {
@@ -78,13 +97,14 @@ export default function SettingsPage() {
 
     // localStorage 側も更新（アプリ内の既存処理と揃える）
     setUsername(trimmed);
-
-    alert("設定を保存しました。");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("theme", theme);
+    }
     router.push("/dream");
   };
 
   return (
-    <div className="loginPage">
+    <div className={`loginPage ${theme === "morning" ? "loginPage--morning" : ""}`}>
       <div className="loginCard">
         <h1 className="loginTitle">設定</h1>
 
@@ -102,6 +122,27 @@ export default function SettingsPage() {
               value={nickname}
               onChange={(e) => setNicknameState(e.target.value)}
             />
+          </div>
+
+          {/* テーマ設定（朝 / 夜） */}
+          <div className="field">
+            <span className="label">テーマ</span>
+            <div className="themeToggle">
+              <button
+                type="button"
+                className={`themeButton ${theme === "morning" ? "isActive" : ""}`}
+                onClick={() => setTheme("morning")}
+              >
+                朝
+              </button>
+              <button
+                type="button"
+                className={`themeButton ${theme === "night" ? "isActive" : ""}`}
+                onClick={() => setTheme("night")}
+              >
+                夜
+              </button>
+            </div>
           </div>
 
           <div className="buttonRow">

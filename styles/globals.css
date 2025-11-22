@@ -46,8 +46,17 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(circle at top, #4f46e5 0%, #0b1020 45%, #050816 100%);
   color: #f9fafb;
+}
+
+/* 朝テーマ用：className に loginPage--morning が付いたときだけ上書き */
+.loginPage.loginPage--morning {
+  background: radial-gradient(circle at top, #e1d397 0%, #e78f50 35%, #eccb4a 100%);
+}
+
+/* それ以外（デフォルト）は夜イメージの背景 */
+.loginPage:not(.loginPage--morning) {
+  background: radial-gradient(circle at top, #4f46e5 0%, #0b1020 45%, #050816 100%);
 }
 
 .loginCard {
@@ -116,6 +125,29 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
 
 .secondaryButton:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* テーマ切り替えボタン */
+.themeToggle {
+  display: flex;
+  gap: 8px;
+}
+
+.themeButton {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #f9fafb;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.themeButton.isActive {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #1f2933;
 }
 
 /*メインページ*/
@@ -194,7 +226,7 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   transition: 0.2s;
   color: white;
   
-  transform: translateY(6px);     /* 👈 ここでボタンごと下に“見せる” */
+  transform: translateY(6px);
 }
 
 .settings:hover {
