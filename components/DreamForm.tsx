@@ -8,9 +8,15 @@ type Props = {
   initialValue?: string | null;
   username: string;
   onSaved?: (value: string) => void;
+  onVideoDone?: () => void;
 };
 
-export default function DreamForm({ initialValue = "", username, onSaved }: Props) {
+export default function DreamForm({ 
+  initialValue = "", 
+  username, 
+  onSaved,
+  onVideoDone 
+}: Props) {
   const [text, setText] = useState(initialValue ?? "");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +36,10 @@ export default function DreamForm({ initialValue = "", username, onSaved }: Prop
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // ★★★テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    onVideoDone?.();
+
     if (!text.trim()) {
       alert("夢を入力してください");
       return;
@@ -75,6 +85,8 @@ export default function DreamForm({ initialValue = "", username, onSaved }: Prop
       }
 
       setText("");
+      // テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+      //onVideoDone?.();
     } catch (err: any) {
       setError(String(err?.message ?? err));
     } finally {
