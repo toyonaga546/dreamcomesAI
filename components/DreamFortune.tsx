@@ -233,8 +233,7 @@ function detectRole(text: string): Role {
 }
 
 /**
- * ここから，Theme × Sentiment × その他の軸で占い文を生成していく
- * ── まずは love から順番に埋めていく想定
+ * 夢占い結果生成ロジック
  */
 function generateFortune(ctx: FortuneContext): string {
   // ===== love × negative =====
