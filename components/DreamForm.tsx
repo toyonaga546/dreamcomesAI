@@ -15,7 +15,7 @@ export default function DreamForm({
   initialValue = "", 
   username, 
   onSaved,
-  onVideoDone 
+  onVideoDone, 
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
   const [sending, setSending] = useState(false);
@@ -36,8 +36,6 @@ export default function DreamForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    // ★★★テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
     onVideoDone?.();
 
     if (!text.trim()) {
@@ -85,8 +83,6 @@ export default function DreamForm({
       }
 
       setText("");
-      // テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-      //onVideoDone?.();
     } catch (err: any) {
       setError(String(err?.message ?? err));
     } finally {

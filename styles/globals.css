@@ -171,6 +171,8 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   padding: 32px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   color: #222;
+  max-width: 720px;   /* ログイン画面の .card と同じ幅イメージ */
+  margin: 0 auto;     /* 中央寄せ */
 }
 
 .dreamTitle {
@@ -247,5 +249,73 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   }
   .settings {
     padding: 6px;
+  }
+}
+
+/* 夢占いコンポーネント用スタイル */
+/* 夢占い結果セクション（幅は dreamCard にそのまま合わせる） */
+.dreamFortune {
+  margin-top: 24px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 白枠の箱（今日のひとことと似た見た目） */
+.dreamFortuneBox {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;              /* 中身を横方向センターに */
+  justify-content: center;
+}
+
+/* ローディング（くるくる）エリア */
+.fortuneLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+
+  max-width: 260px;   /* ★ テキストカラムの幅 */
+  width: 100%;
+}
+
+.fortuneSpinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  border: 2px solid rgba(148, 163, 184, 0.6); /* 薄いグレー */
+  border-top-color: #6366f1;                  /* アクセント色 */
+  animation: fortune-spin 0.8s linear infinite;
+}
+
+.fortuneLoadingText {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+/* 結果の本文 */
+.dreamFortuneText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 400px;   /* ★ fortuneLoading と揃える */
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
+
+@keyframes fortune-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
