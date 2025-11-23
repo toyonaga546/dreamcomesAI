@@ -1,24 +1,28 @@
+// pages/dream.tsx
 import React, { useEffect, useState } from "react";
 import DreamForm from "../components/DreamForm";
 import { getUsername, getDream, clearUsername } from "../lib/auth";
 import { useRouter } from "next/router";
 import SettingsIcon from "../components/SettingsIcon";
 import Papa from "papaparse";
-
+import DreamFortune from "../components/DreamFortune";
+import LoadingBox from "../components/LoadingBox";
 
 export default function DreamPage() {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [theme, setTheme] = useState<"morning" | "night">("night");
-  // Excel 列Aの数値データを格納する状態
+
+  // Excel 列Aのデータ
   const [excelColumnA, setExcelColumnA] = useState<string[] | null>(null);
 
-  // 動画生成が完了したかどうか
-  const [isVideoDone, setIsVideoDone] = useState(false);
-
-  // Excel(A列)からランダムで1つ選ばれた数値
+  // 今日のひとこと用
+  const [isOneWordLoading, setIsOneWordLoading] = useState(false);
   const [randomFromExcel, setRandomFromExcel] = useState<string | null>(null);
+
+  // 夢占いローディング状態
+  const [isFortuneLoading, setIsFortuneLoading] = useState(false);
 
   // 初期読み込み時に localStorage から取得
   useEffect(() => {
@@ -29,6 +33,7 @@ export default function DreamPage() {
     }
     setUsername(u);
     setSaved(getDream());
+
     // 設定画面で保存したテーマを反映
     if (typeof window !== "undefined") {
       const localTheme = window.localStorage.getItem("theme");
@@ -36,8 +41,9 @@ export default function DreamPage() {
         setTheme(localTheme);
       }
     }
-  }, []);
+  }, [router]);
 
+  // Excel 読み込み
   useEffect(() => {
     Papa.parse("/data.csv", {
       download: true,
@@ -52,17 +58,21 @@ export default function DreamPage() {
     });
   }, []);
 
-  // テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-  /*
-  // 動画が終わっていて、かつExcelデータがあるときだけランダムに1つ選ぶ
+  // saved（最後に保存した夢）が変わったら 2秒間ローディング
   useEffect(() => {
-    if (!isVideoDone) return;
-    if (!excelColumnA || excelColumnA.length === 0) return;
+    if (!saved) {
+      setIsFortuneLoading(false);
+      return;
+    }
 
-    const idx = Math.floor(Math.random() * excelColumnA.length);
-    setRandomFromExcel(excelColumnA[idx]);
-  }, [isVideoDone, excelColumnA]);
-  */
+    setIsFortuneLoading(true);
+
+    const timer = setTimeout(() => {
+      setIsFortuneLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [saved]);
 
   function handleLogout() {
     clearUsername();
@@ -73,19 +83,25 @@ export default function DreamPage() {
     router.push("/settings");
   }
 
-  // 動画生成が完了したときに呼ぶ
+  // 動画生成ボタンを押したときに呼ぶ（今日のひとこともここで決める）
   function handleVideoDone() {
-    setIsVideoDone(true);
-
-
-    // テスト用★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
     if (!excelColumnA || excelColumnA.length === 0) {
       console.warn("Excelデータがまだ読み込まれていません");
       return;
     }
 
+    // ボタンを押した瞬間に「ひとこと生成中」にする
+    setIsOneWordLoading(true);
+
+    // 新しい「ひとこと」をランダムに選ぶ
     const idx = Math.floor(Math.random() * excelColumnA.length);
-    setRandomFromExcel(excelColumnA[idx]);
+    const word = excelColumnA[idx];
+
+    // 2秒くるくるしたあとに反映
+    setTimeout(() => {
+      setRandomFromExcel(word);   // 前回のひとことを更新
+      setIsOneWordLoading(false); // ローディング終了
+    }, 2000);
   }
 
   return (
@@ -133,7 +149,6 @@ export default function DreamPage() {
                 initialValue={saved}
                 username={username}
                 onSaved={(v) => setSaved(v)}
-                // ★ 追加：動画生成完了時に呼ぶコールバック
                 onVideoDone={handleVideoDone}
               />
             )}
@@ -145,35 +160,57 @@ export default function DreamPage() {
               </section>
             )}
 
-                        {/* ★ 常に枠だけは表示しておく */}
-            <section className="excelSection">
-              <h3 className="savedTitle">今日のひとこと</h3>
+            {/* 動画表示セクション */}
+            <section className="videoSection" style={{ marginTop: "24px" }}>
+              <h3 className="savedTitle">生成された動画</h3>
               <div
                 style={{
-                  marginTop: "16px",
-                  padding: "16px",
-                  background: "rgba(255, 255, 255, 0.9)",
+                  position: "relative",
+                  paddingTop: "56.25%", // 16:9
+                  marginTop: "12px",
                   borderRadius: "12px",
-                  textAlign: "center",
-                  fontSize: "32px",
-                  fontWeight: "bold",
-                  minHeight: "48px", // ちょっと高さ確保しておくと安定
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
-                {isVideoDone && randomFromExcel !== null ? (
-                  <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                    {randomFromExcel}
-                  </span>
-                ) : (
-                  <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                    動画生成が完了するとここに表示されます
-                  </span>
-                )}
+                <iframe
+                  src="https://youtube.com/embed/ZUntasvVrPc"
+                  title="生成された夢動画"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                  }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
               </div>
             </section>
+
+            {/* 今日のひとこと */}
+            <section className="excelSection">
+              <h3 className="savedTitle">今日のひとこと</h3>
+
+              {/* まだ一度も生成していないとき */}
+              {!isOneWordLoading && randomFromExcel === null ? (
+                <div className="dreamFortuneBox">
+                  <p className="dreamFortuneText">
+                    ひとことが保存されていません．
+                  </p>
+                </div>
+              ) : (
+                // 生成中 or 一度でも生成済み
+                <LoadingBox
+                  loading={isOneWordLoading}
+                  loadingMessage="ひとことを生成中です…"
+                  result={randomFromExcel}
+                />
+              )}
+            </section>
+
+            {/* 夢占いの結果表示 */}
+            <DreamFortune text={saved} loading={isFortuneLoading} />
           </section>
         </main>
       </div>
