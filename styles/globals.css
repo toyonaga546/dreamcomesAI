@@ -249,6 +249,7 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
   }
   .settings {
     padding: 6px;
+    transform: translateY(8px);
   }
 }
 
