@@ -120,7 +120,7 @@ export default function DreamPage() {
     >
       <div className="dreamOverlay">
         <header className="dreamHeader">
-          <div className="dreamLogo">アプリ名</div>
+          <div className="dreamLogo">YoumayBe</div>
           <div className="header-right">
             <button className="secondaryButton" onClick={handleLogout}>
               ログアウト
