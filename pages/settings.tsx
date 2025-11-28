@@ -2,16 +2,39 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getUsername, setUsername, clearUsername } from "../lib/auth";
-import { getSupabase } from "../utils/supabase"; // ★ 追加
+import { getUsername, setUsername } from "../lib/auth";
+import { getSupabase } from "../utils/supabase";
+
+// --- 選択肢の定数を定義 ---
+const AGE_OPTIONS = [
+  "10代",
+  "20代",
+  "30代",
+  "40代",
+  "50代",
+  "60代以上",
+];
+
+const GENDER_OPTIONS = [
+  "男性",
+  "女性",
+  "どちらでもない",
+];
+
+// MBTI 16タイプ
+const MBTI_OPTIONS = [
+  "ISTJ", "ISFJ", "INFJ", "INTJ",
+  "ISTP", "ISFP", "INFP", "INTP",
+  "ESTP", "ESFP", "ENFP", "ENTP",
+  "ESTJ", "ESFJ", "ENFJ", "ENTJ",
+];
 
 export default function SettingsPage() {
   const router = useRouter();
 
-  // ニックネーム（表示名）
+  // --- State 定義 ---
+  // 既存
   const [nickname, setNicknameState] = useState<string>("");
-
-  // テーマ（朝 / 夜）
   const [theme, setTheme] = useState<"morning" | "night">(() => {
     if (typeof window === "undefined") return "night";
     const localTheme = window.localStorage.getItem("theme");
@@ -19,6 +42,11 @@ export default function SettingsPage() {
       ? localTheme
       : "night";
   });
+
+  // ★ 新規追加: 年齢、性別、MBTI
+  const [age, setAge] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [mbti, setMbti] = useState<string>("");
 
   // 初期表示時に Supabase からユーザー情報を取得
   useEffect(() => {
@@ -33,43 +61,47 @@ export default function SettingsPage() {
       const { data, error } = await client.auth.getUser();
 
       if (error || !data.user) {
-        // ログインしていない / セッション切れなど
         router.replace("/");
         return;
       }
 
-      // Supabase に入っている nickname を優先
-      const supaNickname =
-        (data.user.user_metadata as any)?.nickname ?? "";
-      const supaTheme =
-        (data.user.user_metadata as any)?.theme as
-          | "morning"
-          | "night"
-          | undefined;
+      // user_metadata を取得
+      const metadata = data.user.user_metadata || {};
+      
+      const supaNickname = metadata.nickname ?? "";
+      const supaTheme = metadata.theme;
+      
+      // ★ 新規追加分の読み込み (未設定なら空文字)
+      const supaAge = metadata.age ?? "";
+      const supaGender = metadata.gender ?? "";
+      const supaMbti = metadata.mbti ?? "";
 
+      // ニックネーム設定
       if (supaNickname) {
         setNicknameState(supaNickname);
-        // localStorage 側も揃えておく
         setUsername(supaNickname);
       } else {
-        // もし metadata に入ってなければ localStorage を fallback に
         const local = getUsername();
         if (local) {
           setNicknameState(local);
         }
       }
 
-      // テーマは useState 初期化時に localStorage から決めているので，
-      // Supabase に値があるときだけそれを優先して上書き
+      // テーマ設定
       if (supaTheme === "morning" || supaTheme === "night") {
         setTheme(supaTheme);
       }
+
+      // ★ Stateにセット
+      setAge(supaAge);
+      setGender(supaGender);
+      setMbti(supaMbti);
     };
 
     init();
   }, [router]);
 
-  // 設定の保存：Supabase の metadata & localStorage 両方更新
+  // 設定の保存
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -85,17 +117,24 @@ export default function SettingsPage() {
       return;
     }
 
-    // Supabase 上のユーザー情報を更新
+    // ★ Supabase 上のユーザー情報を更新
+    // ここで data オブジェクトに追加するだけで自動的に保存されます
     const { error } = await client.auth.updateUser({
-      data: { nickname: trimmed, theme },
+      data: { 
+        nickname: trimmed, 
+        theme,
+        age,    // 追加
+        gender, // 追加
+        mbti    // 追加
+      },
     });
 
     if (error) {
-      alert("ニックネームの更新に失敗しました: " + error.message);
+      alert("更新に失敗しました: " + error.message);
       return;
     }
 
-    // localStorage 側も更新（アプリ内の既存処理と揃える）
+    // localStorage 側も更新
     setUsername(trimmed);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("theme", theme);
@@ -122,6 +161,54 @@ export default function SettingsPage() {
               value={nickname}
               onChange={(e) => setNicknameState(e.target.value)}
             />
+          </div>
+
+          {/* ★ 年齢設定 (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="age" className="label">年齢</label>
+            <select
+              id="age"
+              className="input" // inputクラスを流用してスタイルを統一
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {AGE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ★ 性別設定 (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="gender" className="label">性別</label>
+            <select
+              id="gender"
+              className="input"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {GENDER_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ★ MBTI設定 (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="mbti" className="label">MBTI</label>
+            <select
+              id="mbti"
+              className="input"
+              value={mbti}
+              onChange={(e) => setMbti(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {MBTI_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
 
           {/* テーマ設定（朝 / 夜） */}

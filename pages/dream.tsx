@@ -1,6 +1,6 @@
-// pages/dream.tsx
 import React, { useEffect, useState } from "react";
 import DreamForm from "../components/DreamForm";
+import { getSupabase } from "../utils/supabase";
 import { getUsername, getDream, clearUsername } from "../lib/auth";
 import { useRouter } from "next/router";
 import SettingsIcon from "../components/SettingsIcon";
@@ -14,6 +14,14 @@ export default function DreamPage() {
   const [saved, setSaved] = useState<string | null>(null);
   const [theme, setTheme] = useState<"morning" | "night">("night");
 
+  // ★ 追加: ユーザーの詳細プロフィール（n8nへ送る用）
+  const [userProfile, setUserProfile] = useState({
+    nickname: "",
+    age: "",
+    gender: "",
+    mbti: "",
+  });
+
   // Excel 列Aのデータ
   const [excelColumnA, setExcelColumnA] = useState<string[] | null>(null);
 
@@ -24,23 +32,43 @@ export default function DreamPage() {
   // 夢占いローディング状態
   const [isFortuneLoading, setIsFortuneLoading] = useState(false);
 
-  // 初期読み込み時に localStorage から取得
+  // 初期読み込み時に localStorage & Supabase から取得
   useEffect(() => {
-    const u = getUsername();
-    if (!u) {
-      router.replace("/");
-      return;
-    }
-    setUsername(u);
-    setSaved(getDream());
-
-    // 設定画面で保存したテーマを反映
-    if (typeof window !== "undefined") {
-      const localTheme = window.localStorage.getItem("theme");
-      if (localTheme === "morning" || localTheme === "night") {
-        setTheme(localTheme);
+    const init = async () => {
+      // 1. LocalStorage (ログインチェック)
+      const localName = getUsername();
+      if (!localName) {
+        router.replace("/");
+        return;
       }
-    }
+      setUsername(localName);
+      setSaved(getDream());
+
+      // 2. テーマ設定
+      if (typeof window !== "undefined") {
+        const localTheme = window.localStorage.getItem("theme");
+        if (localTheme === "morning" || localTheme === "night") {
+          setTheme(localTheme);
+        }
+      }
+
+      // 3. ★ Supabase からプロフィール情報 (年齢/性別/MBTI) を取得
+      const client = getSupabase();
+      if (client) {
+        const { data } = await client.auth.getUser();
+        const meta = data?.user?.user_metadata || {};
+        
+        setUserProfile({
+          // Supabaseのnicknameがあればそれを、なければLocalStorageの値を使う
+          nickname: meta.nickname || localName || "",
+          age: meta.age || "",
+          gender: meta.gender || "",
+          mbti: meta.mbti || "",
+        });
+      }
+    };
+
+    init();
   }, [router]);
 
   // Excel 読み込み
@@ -50,7 +78,7 @@ export default function DreamPage() {
       complete: (result) => {
         const rows = result.data as string[][];
         const colA = rows
-          .map((row) => row[0] as string) // 各行のA列（0番目）だけ取り出す
+          .map((row) => row[0] as string)
           .filter((v) => v !== undefined && v !== null && v !== "");
 
         setExcelColumnA(colA);
@@ -83,24 +111,20 @@ export default function DreamPage() {
     router.push("/settings");
   }
 
-  // 動画生成ボタンを押したときに呼ぶ（今日のひとこともここで決める）
   function handleVideoDone() {
     if (!excelColumnA || excelColumnA.length === 0) {
       console.warn("Excelデータがまだ読み込まれていません");
       return;
     }
 
-    // ボタンを押した瞬間に「ひとこと生成中」にする
     setIsOneWordLoading(true);
 
-    // 新しい「ひとこと」をランダムに選ぶ
     const idx = Math.floor(Math.random() * excelColumnA.length);
     const word = excelColumnA[idx];
 
-    // 2秒くるくるしたあとに反映
     setTimeout(() => {
-      setRandomFromExcel(word);   // 前回のひとことを更新
-      setIsOneWordLoading(false); // ローディング終了
+      setRandomFromExcel(word);
+      setIsOneWordLoading(false);
     }, 2000);
   }
 
@@ -148,6 +172,7 @@ export default function DreamPage() {
               <DreamForm
                 initialValue={saved}
                 username={username}
+                userProfile={userProfile} /* ★ ここでデータを渡しています */
                 onSaved={(v) => setSaved(v)}
                 onVideoDone={handleVideoDone}
               />
@@ -166,7 +191,7 @@ export default function DreamPage() {
               <div
                 style={{
                   position: "relative",
-                  paddingTop: "56.25%", // 16:9
+                  paddingTop: "56.25%",
                   marginTop: "12px",
                   borderRadius: "12px",
                   overflow: "hidden",
@@ -191,8 +216,6 @@ export default function DreamPage() {
             {/* 今日のひとこと */}
             <section className="excelSection">
               <h3 className="savedTitle">今日のひとこと</h3>
-
-              {/* まだ一度も生成していないとき */}
               {!isOneWordLoading && randomFromExcel === null ? (
                 <div className="dreamFortuneBox">
                   <p className="dreamFortuneText">
@@ -200,7 +223,6 @@ export default function DreamPage() {
                   </p>
                 </div>
               ) : (
-                // 生成中 or 一度でも生成済み
                 <LoadingBox
                   loading={isOneWordLoading}
                   loadingMessage="ひとことを生成中です…"
@@ -209,7 +231,6 @@ export default function DreamPage() {
               )}
             </section>
 
-            {/* 夢占いの結果表示 */}
             <DreamFortune text={saved} loading={isFortuneLoading} />
           </section>
         </main>

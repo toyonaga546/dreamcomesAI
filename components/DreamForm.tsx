@@ -1,4 +1,3 @@
-// components/DreamForm.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -7,6 +6,13 @@ import { setDream } from "../lib/auth";
 type Props = {
   initialValue?: string | null;
   username: string;
+  // ★ 追加: 親コンポーネントから受け取るプロフィール情報
+  userProfile?: {
+    nickname: string;
+    age: string;
+    gender: string;
+    mbti: string;
+  };
   onSaved?: (value: string) => void;
   onVideoDone?: () => void;
 };
@@ -14,6 +20,7 @@ type Props = {
 export default function DreamForm({ 
   initialValue = "", 
   username, 
+  userProfile, // ★ 追加
   onSaved,
   onVideoDone, 
 }: Props) {
@@ -59,7 +66,15 @@ export default function DreamForm({
       const res = await fetch("/api/n8n", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: username, message: trimmed }),
+        // ★ 変更点: プロフィール情報を含めて送信
+        body: JSON.stringify({ 
+          userId: username, 
+          message: trimmed,
+          nickname: userProfile?.nickname || username,
+          age: userProfile?.age || "",
+          gender: userProfile?.gender || "",
+          mbti: userProfile?.mbti || "",
+        }),
       });
 
       setLastStatus(res.status);

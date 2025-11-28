@@ -1,21 +1,57 @@
-"use client"; // Next.js（App Router環境なら必要）
+"use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { getSupabase } from "../utils/supabase";
+
+// --- 選択肢の定数（SettingsPageと同じ） ---
+const AGE_OPTIONS = [
+  "10代",
+  "20代",
+  "30代",
+  "40代",
+  "50代",
+  "60代以上",
+];
+
+const GENDER_OPTIONS = [
+  "男性",
+  "女性",
+  "どちらでもない",
+];
+
+const MBTI_OPTIONS = [
+  "ISTJ", "ISFJ", "INFJ", "INTJ",
+  "ISTP", "ISFP", "INFP", "INTP",
+  "ESTP", "ESFP", "ENFP", "ENTP",
+  "ESTJ", "ESFJ", "ENFJ", "ENTJ",
+];
 
 export default function Register() {
   // 入力値
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
+  
+  // ★ 追加: 年齢・性別・MBTI
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [mbti, setMbti] = useState("");
 
   const router = useRouter();
 
   // ユーザー登録処理
   const doRegister = async () => {
-    if (!email.trim() || !password.trim() || !nickname.trim()) {
-      alert("メールアドレス・パスワード・ニックネームをすべて入力してください");
+    // バリデーション：すべての項目をチェック
+    if (
+      !email.trim() || 
+      !password.trim() || 
+      !nickname.trim() ||
+      !age ||
+      !gender ||
+      !mbti
+    ) {
+      alert("すべての項目を入力・選択してください");
       return;
     }
 
@@ -27,11 +63,17 @@ export default function Register() {
         return;
       }
 
+      // ★ signUp時にメタデータとして保存
       const { data, error } = await client.auth.signUp({
         email,
         password,
         options: {
-          data: { nickname },
+          data: { 
+            nickname,
+            age,    // 追加
+            gender, // 追加
+            mbti    // 追加
+          },
           emailRedirectTo: "https://dreamcomes-ai.vercel.app/login",
         },
       });
@@ -44,6 +86,10 @@ export default function Register() {
 
       alert("登録に成功しました。確認メールをチェックしてください。");
       console.log("Registered User Data:", data);
+      
+      // 登録後はログイン画面などへ戻す
+      router.push("/");
+
     } catch (err: any) {
       console.error("unexpected error during signUp:", err);
       alert("登録に失敗しました：" + (err.message || "不明なエラーです"));
@@ -62,7 +108,7 @@ export default function Register() {
           }}
         >
           {/* ニックネーム */}
-          <div className= "field">
+          <div className="field">
             <label htmlFor="nickname" className="label">
               ニックネーム
             </label>
@@ -74,6 +120,54 @@ export default function Register() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
+          </div>
+
+          {/* ★ 年齢 (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="age" className="label">年齢</label>
+            <select
+              id="age"
+              className="input"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {AGE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ★ 性別 (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="gender" className="label">性別</label>
+            <select
+              id="gender"
+              className="input"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {GENDER_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ★ MBTI (セレクトボックス) */}
+          <div className="field">
+            <label htmlFor="mbti" className="label">MBTI</label>
+            <select
+              id="mbti"
+              className="input"
+              value={mbti}
+              onChange={(e) => setMbti(e.target.value)}
+            >
+              <option value="">選択してください</option>
+              {MBTI_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
 
           {/* メールアドレス */}
@@ -106,14 +200,17 @@ export default function Register() {
             />
           </div>
 
-          {/* 登録ボタン */}
-          <button type="submit" className="primaryButton">
-            登録
-          </button>
+          {/* ボタンエリア（横並び） */}
+          <div className="buttonRow">
+            <button type="submit" className="primaryButton">
+              登録
+            </button>
 
-          {/* ログインページに戻る */}
-          <div style={{ marginTop: 16 }}>
-            <button type="button" className="secondaryButton" onClick={() => router.push("/")}>
+            <button
+              type="button"
+              className="secondaryButton"
+              onClick={() => router.push("/")}
+            >
               ログインページに戻る
             </button>
           </div>

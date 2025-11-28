@@ -320,3 +320,22 @@ input,textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size
     transform: rotate(360deg);
   }
 }
+
+
+/* =========================================
+   セレクトボックス（プルダウン）の表示修正
+   ========================================= */
+
+/* デフォルト（夜テーマ）のとき */
+/* 選択肢の背景を暗い色に強制し、文字を白にします */
+select.input option {
+  background-color: #1e293b; /* 濃いグレー（スレート色） */
+  color: #ffffff;
+}
+
+/* 朝テーマ（.loginPage--morning）のとき */
+/* 選択肢の背景を白にし、文字を濃いグレーにします */
+.loginPage--morning select.input option {
+  background-color: #ffffff;
+  color: #1f2933;
+}
