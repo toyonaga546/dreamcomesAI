@@ -15,7 +15,8 @@ export default function Home() {
   return (
     <div className="loginPage">
       <main className="loginCard">
-        <h1 className='loginTitle'>夢日記へようこそ</h1>
+        <h1 className='loginTitle'>YoumayBe</h1>
+        <p style={{ textAlign: 'center' }}>あなたの夢を共有しよう</p>
         {/* 名前を入力してログインするフォーム */}
         <Login />
       </main>

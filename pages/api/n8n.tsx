@@ -12,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const reqId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   console.log(`[API][${reqId}] .env URL:`, url);
-  console.log(`[API][${reqId}] Request body:`, req.body);
+  // console.log(`[API][${reqId}] Request body:`, req.body); // 全体ログだと長くなるので必要ならコメントアウト解除
 
   if (!url) {
     return res
@@ -21,12 +21,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    const { userId = "anonymous", message = "" } =
-      (req.body ?? {}) as Record<string, any>;
+    // ★ 変更点1: ここで age, gender, mbti, nickname を受け取るように追加
+    const { 
+      userId = "anonymous", 
+      message = "", 
+      nickname = "",
+      age = "",
+      gender = "",
+      mbti = ""
+    } = (req.body ?? {}) as Record<string, any>;
 
+    // ★ 変更点2: n8nに送るデータ(outgoingPayload)にプロフィール情報を含める
     const outgoingPayload = {
       userId,
       message,
+      // プロフィール情報を追加
+      nickname,
+      age,
+      gender,
+      mbti,
+      
       meta: {
         source: "nextjs-pages",
         ua: req.headers["user-agent"] ?? "",
@@ -71,7 +85,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         .json({ ok: false, status: response.status, data, reqId });
     }
 
-    // 正規化：配列/オブジェクト/文字列 → { message: ... } に寄せる
+    // 正規化処理
     const normalize = (d: any) => {
       if (Array.isArray(d) && d[0]?.greeting) return { message: String(d[0].greeting) };
       if (d?.greeting) return { message: String(d.greeting) };
@@ -84,7 +98,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     console.log(`[API][${reqId}] Normalized payload:`, normalized);
 
-    // リクエストIDをヘッダにも返す
     res.setHeader("X-Request-Id", reqId);
     return res.status(200).json({ ok: true, data: normalized, reqId, meta: { parsed, rawLength: text.length } });
   } catch (e: any) {
