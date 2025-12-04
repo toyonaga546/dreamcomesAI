@@ -113,6 +113,26 @@ export default function DreamForm({
         json?.data?.jobId ?? json?.jobId ?? undefined;
       if (jobId) {
         onJobCreated?.(jobId);
+
+        // ★ ここで「動画生成フロー」を一回だけキック
+        // 結果は使わないので await するかどうかは好み
+        // 「絶対に投げっぱなし」にしたければ await を付けずに Promise を無視してもOK
+        fetch("/api/start-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jobId,
+            // 必要なら動画生成に使う情報もここで渡す
+            userId: username,
+            message: trimmed,
+            nickname: userProfile?.nickname || username,
+            age: userProfile?.age || "",
+            gender: userProfile?.gender || "",
+            mbti: userProfile?.mbti || "",
+          }),
+        }).catch(() => {
+          // ここも握りつぶしでOK（UI的には何も起こさない）
+        });
       }
 
       setText("");
