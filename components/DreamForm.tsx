@@ -15,14 +15,16 @@ type Props = {
   };
   onSaved?: (value: string) => void;
   onVideoDone?: () => void;
+  onJobCreated?: (jobId: string) => void;
 };
 
-export default function DreamForm({ 
-  initialValue = "", 
-  username, 
-  userProfile, // ★ 追加
+export default function DreamForm({
+  initialValue = "",
+  username,
+  userProfile,
   onSaved,
-  onVideoDone, 
+  onVideoDone,
+  onJobCreated,
 }: Props) {
   const [text, setText] = useState(initialValue ?? "");
   const [sending, setSending] = useState(false);
@@ -40,6 +42,15 @@ export default function DreamForm({
     lastResponse?.data?.data?.message ??
     lastResponse?.message ??
     null;
+
+  // ★ 追加: YouTube の watch URL → embed URL に変換するヘルパー
+  const toEmbedUrl = (url?: string) => {
+    if (!url) return "";
+    if (url.includes("watch?v=")) {
+      return url.replace("watch?v=", "embed/");
+    }
+    return url;
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,9 +77,9 @@ export default function DreamForm({
       const res = await fetch("/api/n8n", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ★ 変更点: プロフィール情報を含めて送信
-        body: JSON.stringify({ 
-          userId: username, 
+        // ★ プロフィール情報を含めて送信
+        body: JSON.stringify({
+          userId: username,
           message: trimmed,
           nickname: userProfile?.nickname || username,
           age: userProfile?.age || "",
@@ -95,6 +106,13 @@ export default function DreamForm({
       if (!res.ok || json?.ok === false) {
         // エラー時も reqId と raw を画面に残す
         throw new Error(json?.error ?? `HTTP ${res.status}`);
+      }
+
+      // ★ ここで jobId を取り出して親に渡す
+      const jobId: string | undefined =
+        json?.data?.jobId ?? json?.jobId ?? undefined;
+      if (jobId) {
+        onJobCreated?.(jobId);
       }
 
       setText("");
@@ -127,14 +145,19 @@ export default function DreamForm({
       {error && <p style={{ color: "crimson" }}>エラー：{error}</p>}
 
       {/* 一行の挨拶文（最も見たい情報） */}
-      <p style={{ marginTop: 12 }}>
-        {greeting ?? "応答がありません"}
-      </p>
+      <p style={{ marginTop: 12 }}>{greeting ?? "応答がありません"}</p>
 
       {/* ─ デバッグブロック ─ */}
       <details style={{ marginTop: 8 }}>
         <summary>デバッグ情報を表示</summary>
-        <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13, lineHeight: 1.5 }}>
+        <div
+          style={{
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
+        >
           <div>status: {String(lastStatus)}</div>
           <div>reqId: {lastReqId ?? "-"}</div>
           <div>hasJSON: {String(Boolean(lastResponse))}</div>
@@ -147,14 +170,12 @@ export default function DreamForm({
               </pre>
             </>
           )}
-          {lastRaw && (
-            <>
-              <div style={{ marginTop: 6 }}>RAW:</div>
-              <pre style={{ whiteSpace: "pre-wrap" }}>{lastRaw}</pre>
-            </>
-          )}
         </div>
       </details>
     </form>
   );
+
+    const debugJobId = lastResponse?.data?.jobId ?? lastResponse?.jobId ?? null;
+    const debugJobStatus = lastResponse?.data?.status ?? lastResponse?.status ?? null;
+
 }

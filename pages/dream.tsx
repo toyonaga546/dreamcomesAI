@@ -14,6 +14,14 @@ export default function DreamPage() {
   const [saved, setSaved] = useState<string | null>(null);
   const [theme, setTheme] = useState<"morning" | "night">("night");
 
+  // 動画生成ジョブ管理用
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [videoStatus, setVideoStatus] = useState<
+    "idle" | "queued" | "processing" | "done" | "error"
+  >("idle");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
   // ★ 追加: ユーザーの詳細プロフィール（n8nへ送る用）
   const [userProfile, setUserProfile] = useState({
     nickname: "",
@@ -128,6 +136,69 @@ export default function DreamPage() {
     }, 2000);
   }
 
+  // jobId がセットされたら n8n にステータスを聞きに行く
+  useEffect(() => {
+    if (!jobId) return;
+
+    setVideoStatus("queued");
+    setVideoError(null);
+    setVideoUrl(null);
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/job-status?jobId=${encodeURIComponent(jobId)}`);
+        const json = await res.json();
+
+        console.log("job-status response:", json);
+
+        if (!res.ok || json.ok === false) {
+          throw new Error(json?.error ?? `HTTP ${res.status}`);
+        }
+
+        const raw = json.data;
+
+        let status: string;
+        let yt: string | undefined;
+        let data: any = {};
+
+        if (typeof raw === "string") {
+          // n8n が「URL の文字列だけ」を返してきたケース
+          status = "done";
+          yt = raw;
+        } else {
+          data = raw || {};
+          status = data.status || "processing";
+          yt =
+            data.youtubeUrl ||
+            data.youtube_url ||
+            data.url || // シート列名 url も拾う
+            undefined;
+        }
+
+        if (status === "done") {
+          setVideoStatus("done");
+          if (yt) setVideoUrl(yt);
+          clearInterval(interval);
+        } else if (status === "error") {
+          setVideoStatus("error");
+          setVideoError(data.errorMessage || "動画生成に失敗しました．");
+          clearInterval(interval);
+        } else {
+          // pending / processing
+          setVideoStatus("processing");
+        }
+      } catch (e: any) {
+        console.error("job-status error", e);
+        setVideoStatus("error");
+        setVideoError(e?.message ?? String(e));
+        clearInterval(interval);
+      }
+    }, 3000); // 3秒ごとに確認
+
+    return () => clearInterval(interval);
+  }, [jobId]);
+
+
   return (
     <div
       className="dreamPage"
@@ -175,6 +246,7 @@ export default function DreamPage() {
                 userProfile={userProfile} /* ★ ここでデータを渡しています */
                 onSaved={(v) => setSaved(v)}
                 onVideoDone={handleVideoDone}
+                onJobCreated={(id) => setJobId(id)}
               />
             )}
 
@@ -188,29 +260,40 @@ export default function DreamPage() {
             {/* 動画表示セクション */}
             <section className="videoSection" style={{ marginTop: "24px" }}>
               <h3 className="savedTitle">生成された動画</h3>
-              <div
-                style={{
-                  position: "relative",
-                  paddingTop: "56.25%",
-                  marginTop: "12px",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                }}
-              >
-                <iframe
-                  src="https://youtube.com/embed/ZUntasvVrPc"
-                  title="生成された夢動画"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                  }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
+              {videoStatus === "idle" && !videoUrl && (
+                <p style={{ marginTop: 12 }}>まだ動画生成は開始されていません．</p>
+              )}
+
+              {(videoStatus === "queued" || videoStatus === "processing") && (
+                <div style={{ marginTop: 12 }}>
+                  <LoadingBox
+                    loading={true}
+                    loadingMessage="動画を生成中です．．．"
+                    result={null}
+                  />
+                </div>
+              )}
+
+              {videoStatus === "error" && (
+                <p style={{ marginTop: 12, color: "crimson" }}>
+                  {videoError ?? "動画生成中にエラーが発生しました．"}
+                </p>
+              )}
+
+              {videoStatus === "done" && videoUrl && (
+                <div style={{ marginTop: 12 }}>
+                  <p>生成された動画のURL：</p>
+                  <p>
+                    <a
+                      href={videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {videoUrl}
+                    </a>
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* 今日のひとこと */}
