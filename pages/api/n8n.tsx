@@ -21,6 +21,30 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
+    // ★ ここから：一時的に n8n を呼ばずダミーデータを返すテスト用コード
+    /*
+    const dummy = {
+      userId: "pote",
+      message: "空をとんだ",
+      nickname: "テスト太郎",
+      age: "20代",
+      gender: "男性",
+      mbti: "ENTJ",
+      youtubeUrl: "https://www.youtube.com/watch?v=8aS-PJg_jYs",
+    };
+
+    console.log(`[API][${reqId}] return dummy data (skip n8n)`, dummy);
+
+    res.setHeader("X-Request-Id", reqId);
+    return res.status(200).json({
+      ok: true,
+      data: dummy,
+      reqId,
+      meta: { parsed: true, rawLength: JSON.stringify(dummy).length },
+    });
+    */
+    // ★ ここまでを「テストしたいときだけ」コメントアウト解除する
+
     // ★ 変更点1: ここで age, gender, mbti, nickname を受け取るように追加
     const { 
       userId = "anonymous", 
@@ -35,7 +59,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const outgoingPayload = {
       userId,
       message,
-      // プロフィール情報を追加
       nickname,
       age,
       gender,
@@ -50,6 +73,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     console.log(`[API][${reqId}] Sending payload -> n8n:`, outgoingPayload);
+    // ここから
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -74,10 +98,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     console.log(
-      `[API][${reqId}] Response from n8n:`,
+      `[API][${reqId}] Response from n8n (raw text):`,
+      { status: response.status, ok: response.ok },
+      text
+    );
+
+    console.log(
+      `[API][${reqId}] Response from n8n (parsed):`,
       { status: response.status, ok: response.ok, parsed },
       data
     );
+
 
     if (!response.ok) {
       return res
@@ -86,20 +117,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     // 正規化処理
-    const normalize = (d: any) => {
-      if (Array.isArray(d) && d[0]?.greeting) return { message: String(d[0].greeting) };
-      if (d?.greeting) return { message: String(d.greeting) };
-      if (d?.data && Array.isArray(d.data) && d.data[0]?.greeting) return { message: String(d.data[0].greeting) };
-      if (d?.data?.greeting) return { message: String(d.data.greeting) };
-      if (typeof d === "string") return { message: d };
-      return d;
-    };
-    const normalized = normalize(data);
+    const jobId =
+      (data && (data.jobId || data.job_id)) ||
+      (Array.isArray(data) && data[0] && (data[0].jobId || data[0].job_id)) ||
+      null;
 
-    console.log(`[API][${reqId}] Normalized payload:`, normalized);
+    const status =
+      (data && (data.status || data.state)) ||
+      (Array.isArray(data) && data[0] && (data[0].status || data[0].state)) ||
+      null;
+
+    const normalized = { jobId, status };
+
+    console.log(`[API][${reqId}] Normalized job info:`, normalized);
 
     res.setHeader("X-Request-Id", reqId);
-    return res.status(200).json({ ok: true, data: normalized, reqId, meta: { parsed, rawLength: text.length } });
+    return res
+      .status(200)
+      .json({ ok: true, data: normalized, reqId, meta: { parsed, rawLength: text.length } });
   } catch (e: any) {
     console.error(`[API][${reqId}] ERROR:`, e);
     return res
