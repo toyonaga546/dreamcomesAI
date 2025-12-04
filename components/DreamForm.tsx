@@ -6,7 +6,7 @@ import { setDream } from "../lib/auth";
 type Props = {
   initialValue?: string | null;
   username: string;
-  // ★ 追加: 親コンポーネントから受け取るプロフィール情報
+  // 親コンポーネントから受け取るプロフィール情報
   userProfile?: {
     nickname: string;
     age: string;
@@ -43,7 +43,8 @@ export default function DreamForm({
     lastResponse?.message ??
     null;
 
-  // ★ 追加: YouTube の watch URL → embed URL に変換するヘルパー
+  /*
+  // 追加: YouTube の watch URL → embed URL に変換するヘルパー
   const toEmbedUrl = (url?: string) => {
     if (!url) return "";
     if (url.includes("watch?v=")) {
@@ -51,6 +52,7 @@ export default function DreamForm({
     }
     return url;
   };
+  */
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,11 +75,11 @@ export default function DreamForm({
     setLastReqId(null);
 
     try {
-      // 一旦 fetch → text で“生”を確保し，その後 JSON 解析に挑戦
+      // 一旦 fetch → text で生を確保し，その後 JSON 解析に挑戦
       const res = await fetch("/api/n8n", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ★ プロフィール情報を含めて送信
+        // プロフィール情報を含めて送信
         body: JSON.stringify({
           userId: username,
           message: trimmed,
@@ -108,13 +110,13 @@ export default function DreamForm({
         throw new Error(json?.error ?? `HTTP ${res.status}`);
       }
 
-      // ★ ここで jobId を取り出して親に渡す
+      // ここで jobId を取り出して親に渡す
       const jobId: string | undefined =
         json?.data?.jobId ?? json?.jobId ?? undefined;
       if (jobId) {
         onJobCreated?.(jobId);
 
-        // ★ ここで「動画生成フロー」を一回だけキック
+        // ここで「動画生成フロー」を一回だけキック
         // 結果は使わないので await するかどうかは好み
         // 「絶対に投げっぱなし」にしたければ await を付けずに Promise を無視してもOK
         fetch("/api/start-video", {
@@ -164,10 +166,7 @@ export default function DreamForm({
       {/* エラー（API/ネットワーク/JSON 解析など） */}
       {error && <p style={{ color: "crimson" }}>エラー：{error}</p>}
 
-      {/* 一行の挨拶文（最も見たい情報） */}
-      <p style={{ marginTop: 12 }}>{greeting ?? "応答がありません"}</p>
-
-      {/* ─ デバッグブロック ─ */}
+      {/*
       <details style={{ marginTop: 8 }}>
         <summary>デバッグ情報を表示</summary>
         <div
@@ -192,6 +191,7 @@ export default function DreamForm({
           )}
         </div>
       </details>
+      */}
     </form>
   );
 
