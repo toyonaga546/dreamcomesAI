@@ -94,7 +94,7 @@ export default function DreamPage() {
     });
   }, []);
 
-  // saved（最後に保存した夢）が変わったら 2秒間ローディング
+  // saved（最後に保存した夢）が変わったら 8秒間ローディング
   useEffect(() => {
     if (!saved) {
       setIsFortuneLoading(false);
@@ -105,7 +105,7 @@ export default function DreamPage() {
 
     const timer = setTimeout(() => {
       setIsFortuneLoading(false);
-    }, 2000);
+    }, 8000);
 
     return () => clearTimeout(timer);
   }, [saved]);
@@ -133,7 +133,7 @@ export default function DreamPage() {
     setTimeout(() => {
       setRandomFromExcel(word);
       setIsOneWordLoading(false);
-    }, 2000);
+    }, 8000);
   }
 
   // jobId がセットされたら n8n にステータスを聞きに行く
@@ -298,11 +298,11 @@ export default function DreamPage() {
 
             {/* 今日のひとこと */}
             <section className="excelSection">
-              <h3 className="savedTitle">今日のひとこと</h3>
+              <h3 className="savedTitle">今日のアドバイス</h3>
               {!isOneWordLoading && randomFromExcel === null ? (
                 <div className="dreamFortuneBox">
                   <p className="dreamFortuneText">
-                    ひとことが保存されていません．
+                    アドバイスが保存されていません．
                   </p>
                 </div>
               ) : (
