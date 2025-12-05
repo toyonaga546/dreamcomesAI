@@ -329,7 +329,9 @@ export default function DreamPage() {
                   opacity: 0.95,
                 }}
               >
-                <p style={{ fontSize: "16px" }}>近日公開</p>
+                <p style={{ fontSize: "16px" }}>
+                  近日公開<br/>（例：夢の内容が20代男性と似ている傾向があります）
+                </p>
               </div>
             </section>
           </section>     
