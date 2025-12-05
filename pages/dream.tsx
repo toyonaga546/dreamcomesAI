@@ -315,7 +315,24 @@ export default function DreamPage() {
             </section>
 
             <DreamFortune text={saved} loading={isFortuneLoading} />
-          </section>
+
+            {/* データ解析（近日公開） */}
+            <section className="analysisSection" style={{ marginTop: "32px" }}>
+              <h3 className="savedTitle">データ解析</h3>
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "12px",
+                  padding: "20px",
+                  marginTop: "8px",
+                  textAlign: "center",
+                  opacity: 0.95,
+                }}
+              >
+                <p style={{ fontSize: "16px" }}>近日公開</p>
+              </div>
+            </section>
+          </section>     
         </main>
       </div>
     </div>
