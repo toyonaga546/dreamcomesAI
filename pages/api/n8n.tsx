@@ -52,7 +52,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       nickname = "",
       age = "",
       gender = "",
-      mbti = ""
+      mbti = "",
+      fortune = "",
+      fortuneTheme,
+      fortuneSentiment,
+      fortuneScene,
+      fortuneTimeFrame,
+      fortuneRole,
     } = (req.body ?? {}) as Record<string, any>;
 
     // ★ 変更点2: n8nに送るデータ(outgoingPayload)にプロフィール情報を含める
@@ -63,6 +69,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       age,
       gender,
       mbti,
+      // 夢占いの結果本文
+      fortune,
+
+      // 夢占いの分類情報（n8n 側で扱いやすいよう，まとまりにしておく）
+      fortuneAnalysis: {
+        theme: fortuneTheme,
+        sentiment: fortuneSentiment,
+        scene: fortuneScene,
+        timeFrame: fortuneTimeFrame,
+        role: fortuneRole,
+      },
       
       meta: {
         source: "nextjs-pages",
