@@ -5,22 +5,22 @@ import React, { useMemo } from "react";
 import LoadingBox from "./LoadingBox"; // ローディング表示用コンポーネント
 
 // テーマ（何についての夢か）
-type Theme = "love" | "work" | "relationship" | "self";
+export type Theme = "love" | "work" | "relationship" | "self";
 
 // 感情（ざっくり3分類）
-type Sentiment = "negative" | "neutral" | "positive";
+export type Sentiment = "negative" | "neutral" | "positive";
 
 // 夢の舞台
-type Scene = "home" | "outside";
+export type Scene = "home" | "outside";
 
 // 時間軸（過去 / 未来）
-type TimeFrame = "past" | "future";
+export type TimeFrame = "past" | "future";
 
 // 夢の中での自分の立ち位置
-type Role = "active" | "passive";
+export type Role = "active" | "passive";
 
 // generateFortune に渡すコンテキスト
-type FortuneContext = {
+export type FortuneContext = {
   theme: Theme;
   sentiment: Sentiment;
   scene: Scene;
@@ -28,6 +28,37 @@ type FortuneContext = {
   role: Role;
   text: string;
 };
+
+// FortuneContext のすぐ下あたりに追加
+export function analyzeDream(text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  const theme = detectTheme(trimmed);
+  const sentiment = detectSentiment(trimmed);
+  const scene = detectScene(trimmed);
+  const timeFrame = detectTimeFrame(trimmed);
+  const role = detectRole(trimmed);
+
+  const fortune = generateFortune({
+    theme,
+    sentiment,
+    scene,
+    timeFrame,
+    role,
+    text: trimmed,
+  });
+
+  return {
+    theme,
+    sentiment,
+    scene,
+    timeFrame,
+    role,
+    fortune,
+  };
+}
+
 
 type Props = {
   text: string | null;   // ユーザーが保存した夢の本文
@@ -40,23 +71,11 @@ export default function DreamFortune({ text, loading }: Props) {
   // 夢の内容があるときだけ占い結果を計算
   const result = useMemo(() => {
     if (!trimmed) return null;
+    const r = analyzeDream(trimmed);
+    if (!r) return null;
 
-    const theme = detectTheme(trimmed);
-    const sentiment = detectSentiment(trimmed);
-    const scene = detectScene(trimmed);
-    const timeFrame = detectTimeFrame(trimmed);
-    const role = detectRole(trimmed);
-
-    const fortune = generateFortune({
-      theme,
-      sentiment,
-      scene,
-      timeFrame,
-      role,
-      text: trimmed,
-    });
-
-    return { theme, sentiment, fortune };
+    // 画面で今使っているのは theme / sentiment / fortune だけなのでそこだけ返す
+    return { theme: r.theme, sentiment: r.sentiment, fortune: r.fortune };
   }, [trimmed]);
 
   return (

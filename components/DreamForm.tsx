@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { setDream } from "../lib/auth";
+import { analyzeDream } from "../components/DreamFortune";
 
 type Props = {
   initialValue?: string | null;
@@ -67,6 +68,20 @@ export default function DreamForm({
     setDream(trimmed);
     onSaved?.(trimmed);
 
+    // 夢占いの分類と結果を計算
+    const analysis = analyzeDream(trimmed);
+
+    const fortunePayload = analysis
+      ? {
+          fortune: analysis.fortune,
+          fortuneTheme: analysis.theme,
+          fortuneSentiment: analysis.sentiment,
+          fortuneScene: analysis.scene,
+          fortuneTimeFrame: analysis.timeFrame,
+          fortuneRole: analysis.role,
+        }
+      : {};
+
     setSending(true);
     setError(null);
     setLastResponse(null);
@@ -87,6 +102,8 @@ export default function DreamForm({
           age: userProfile?.age || "",
           gender: userProfile?.gender || "",
           mbti: userProfile?.mbti || "",
+          // ここに夢占いの分類と結果を追加
+          ...fortunePayload,
         }),
       });
 
